@@ -1,36 +1,34 @@
 package com.example.coffee.order.entity;
 
+import com.example.coffee.common.Timestamped;
 import com.example.coffee.menu.entity.Menu;
 import com.example.coffee.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@Table(name = "`ORDER`")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order {
+public class Order extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USERS_ID", nullable = false)
+    @JoinColumn(name = "USER_ID", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MENU_ID", nullable = false)
+    @JoinColumn(name = "MENU_ID", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Menu menu;
 
-    @Column
-    @CreatedDate
-    private LocalDateTime orderedAt;
+    @Column(nullable = false)
+    private String menuName;
+
+    @Column(nullable = false)
+    private int menuPrice;
 }

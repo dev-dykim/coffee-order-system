@@ -1,29 +1,25 @@
 package com.example.coffee.user.entity;
 
+import com.example.coffee.common.Timestamped;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PointTransaction {
+public class PointTransaction extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private User user;
 
-    @Column
+    @Column(length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
@@ -31,9 +27,5 @@ public class PointTransaction {
     private Long point;
 
     @Column
-    private Long totalPoint;
-
-    @Column
-    @CreatedDate
-    private LocalDateTime transactedAt;
+    private Long pointBalance;
 }
