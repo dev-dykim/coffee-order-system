@@ -3,6 +3,7 @@ package com.example.coffee.menu.entity;
 import com.example.coffee.common.Timestamped;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,4 +21,17 @@ public class Menu extends Timestamped {
 
     @Column(nullable = false)
     private Integer menuPrice;
+
+    @Builder
+    private Menu(String menuName, Integer menuPrice) {
+        this.menuName = menuName;
+        this.menuPrice = menuPrice;
+    }
+
+    static public Menu of(String menuName, Integer menuPrice) {
+        return builder()
+                .menuName(menuName)
+                .menuPrice(menuPrice)
+                .build();
+    }
 }
