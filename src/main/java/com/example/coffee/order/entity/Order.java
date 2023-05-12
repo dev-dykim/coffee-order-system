@@ -5,6 +5,7 @@ import com.example.coffee.menu.entity.Menu;
 import com.example.coffee.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,4 +32,21 @@ public class Order extends Timestamped {
 
     @Column(nullable = false)
     private int menuPrice;
+
+    @Builder
+    private Order(User user, Menu menu, String menuName, int menuPrice) {
+        this.user = user;
+        this.menu = menu;
+        this.menuName = menuName;
+        this.menuPrice = menuPrice;
+    }
+
+    public static Order of(User user, Menu menu) {
+        return builder()
+                .user(user)
+                .menu(menu)
+                .menuName(menu.getMenuName())
+                .menuPrice(menu.getMenuPrice())
+                .build();
+    }
 }

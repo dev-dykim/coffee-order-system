@@ -5,6 +5,6 @@ import lombok.Getter;
 @Getter
 public class OrderRequestDto {
 
-    private String username;
+    private String userName;
     private Long menuId;
 }

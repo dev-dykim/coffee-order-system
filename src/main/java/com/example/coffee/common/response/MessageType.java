@@ -5,7 +5,9 @@ import lombok.Getter;
 @Getter
 public enum MessageType {
 
-    CHARGE_SUCCESSFULLY("충전이 완료되었습니다.");
+    CHARGE_SUCCESSFULLY("충전이 완료되었습니다."),
+    ORDER_SUCCESSFULLY("주문이 완료되었습니다.")
+    ;
 
     private final String message;
 
