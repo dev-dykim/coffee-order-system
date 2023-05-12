@@ -39,4 +39,8 @@ public class User extends Timestamped {
     public void plusPoint(Long point) {
         this.point += point;
     }
+
+    public void minusPoint(Long point) {
+        this.point -= point;
+    }
 }
