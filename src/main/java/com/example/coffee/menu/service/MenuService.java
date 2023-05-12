@@ -1,6 +1,7 @@
 package com.example.coffee.menu.service;
 
 import com.example.coffee.menu.dto.MenuResponseDto;
+import com.example.coffee.menu.dto.PopularMenuResponseDto;
 import com.example.coffee.menu.repository.MenuRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,4 +22,8 @@ public class MenuService {
                 .toList();
     }
 
+    public List<PopularMenuResponseDto> getPopularMenus() {
+
+        return menuRepository.findWeeklyTopThreeMenus();
+    }
 }
