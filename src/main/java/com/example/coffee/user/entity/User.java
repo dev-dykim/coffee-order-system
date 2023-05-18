@@ -1,6 +1,8 @@
 package com.example.coffee.user.entity;
 
 import com.example.coffee.common.Timestamped;
+import com.example.coffee.common.exception.IllegalArgumentCustomException;
+import com.example.coffee.common.response.ErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -37,10 +39,16 @@ public class User extends Timestamped {
     }
 
     public void plusPoint(Long point) {
+        if (point <= 0) {
+            throw new IllegalArgumentCustomException(ErrorType.INVALID_POINT);
+        }
         this.point += point;
     }
 
     public void minusPoint(Long point) {
+        if (this.point - point < 0) {
+            throw new IllegalArgumentCustomException(ErrorType.INSUFFICIENT_POINT);
+        }
         this.point -= point;
     }
 }

@@ -1,6 +1,5 @@
 package com.example.coffee.order.service;
 
-import com.example.coffee.common.exception.IllegalArgumentCustomException;
 import com.example.coffee.common.exception.NotFoundException;
 import com.example.coffee.common.response.ErrorType;
 import com.example.coffee.menu.entity.Menu;
@@ -39,9 +38,6 @@ public class OrderService {
                 () -> new NotFoundException(ErrorType.NOT_FOUND_MENU)
         );
 
-        if (user.getPoint() < menu.getMenuPrice()) {
-            throw new IllegalArgumentCustomException(ErrorType.INSUFFICIENT_POINT);
-        }
         user.minusPoint(Long.valueOf(menu.getMenuPrice()));
 
         Order order = orderRepository.save(Order.of(user, menu));
