@@ -1,6 +1,5 @@
 package com.example.coffee.user.service;
 
-import com.example.coffee.common.exception.IllegalArgumentCustomException;
 import com.example.coffee.common.exception.NotFoundException;
 import com.example.coffee.common.response.ErrorType;
 import com.example.coffee.user.dto.PointRequestDto;
@@ -29,9 +28,6 @@ public class UserService {
                 () -> new NotFoundException(ErrorType.NOT_FOUND_USER)
         );
 
-        if (requestDto.getPoint() <= 0) {
-            throw new IllegalArgumentCustomException(ErrorType.INVALID_POINT);
-        }
         user.plusPoint(requestDto.getPoint());
 
         pointTransactionRepository.save(PointTransaction.of(user, TransactionType.CHARGE, requestDto.getPoint()));
