@@ -1,9 +1,12 @@
 package com.example.coffee.menu.dto;
 
+import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class PopularMenuResponseDto {
 
     private Long menuId;
@@ -11,7 +14,8 @@ public class PopularMenuResponseDto {
     private int orderCount;
 
     @Builder
-    private PopularMenuResponseDto(Long menuId, String menuName, int orderCount) {
+    @QueryProjection
+    public PopularMenuResponseDto(Long menuId, String menuName, int orderCount) {
         this.menuId = menuId;
         this.menuName = menuName;
         this.orderCount = orderCount;
