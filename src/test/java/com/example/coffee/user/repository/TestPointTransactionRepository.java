@@ -9,5 +9,5 @@ import java.util.Optional;
 @TestConfiguration
 public interface TestPointTransactionRepository extends JpaRepository<PointTransaction, Long> {
 
-    Optional<PointTransaction> findTopOrderByOrderByCreatedAtDesc();
+    Optional<PointTransaction> findTopByOrderByCreatedAtDesc();
 }

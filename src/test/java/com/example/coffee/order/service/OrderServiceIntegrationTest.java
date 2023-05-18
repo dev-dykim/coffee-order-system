@@ -65,7 +65,7 @@ class OrderServiceIntegrationTest {
         assertThat(order.getUser()).isEqualTo(user.get());
         assertThat(order.getMenu()).isEqualTo(menu.get());
 
-        PointTransaction transaction = testPointTransactionRepository.findTopOrderByOrderByCreatedAtDesc().orElseThrow();
+        PointTransaction transaction = testPointTransactionRepository.findTopByOrderByCreatedAtDesc().orElseThrow();
         assertThat(transaction.getUser()).isEqualTo(user.get());
         assertThat(transaction.getPoint()).isEqualTo(menu.get().getMenuPrice().longValue());
         assertThat(transaction.getPointBalance()).isEqualTo(user.get().getPoint());
