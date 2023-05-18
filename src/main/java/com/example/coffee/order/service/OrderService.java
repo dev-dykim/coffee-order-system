@@ -6,9 +6,9 @@ import com.example.coffee.common.response.ErrorType;
 import com.example.coffee.menu.entity.Menu;
 import com.example.coffee.menu.repository.MenuRepository;
 import com.example.coffee.order.dto.OrderRequestDto;
+import com.example.coffee.order.dto.OrderResponseDto;
 import com.example.coffee.order.entity.Order;
 import com.example.coffee.order.repository.OrderRepository;
-import com.example.coffee.user.dto.PointResponseDto;
 import com.example.coffee.user.entity.PointTransaction;
 import com.example.coffee.user.entity.TransactionType;
 import com.example.coffee.user.entity.User;
@@ -29,7 +29,7 @@ public class OrderService {
 
 
     @Transactional
-    public PointResponseDto makeOrder(OrderRequestDto requestDto) {
+    public OrderResponseDto makeOrder(OrderRequestDto requestDto) {
 
         User user = userRepository.findByUserName(requestDto.getUserName()).orElseThrow(
                 () -> new NotFoundException(ErrorType.NOT_FOUND_USER)
@@ -44,10 +44,10 @@ public class OrderService {
         }
         user.minusPoint(Long.valueOf(menu.getMenuPrice()));
 
-        orderRepository.save(Order.of(user, menu));
+        Order order = orderRepository.save(Order.of(user, menu));
 
         pointTransactionRepository.save(PointTransaction.of(user, TransactionType.USE, Long.valueOf(menu.getMenuPrice())));
 
-        return PointResponseDto.of(user.getPoint());
+        return OrderResponseDto.of(order.getId());
     }
 }
