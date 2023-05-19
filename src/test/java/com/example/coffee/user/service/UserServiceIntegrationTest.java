@@ -10,9 +10,11 @@ import com.example.coffee.user.entity.User;
 import com.example.coffee.user.repository.TestPointTransactionRepository;
 import com.example.coffee.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,6 +39,7 @@ class UserServiceIntegrationTest {
     @Autowired UserRepository userRepository;
     @Autowired MenuRepository menuRepository;
     @Autowired TestPointTransactionRepository pointTransactionRepository;
+    @Autowired RedissonClient redissonClient;
 
     private PointRequestDto requestDto;
     private long point;
@@ -47,6 +50,11 @@ class UserServiceIntegrationTest {
         point = 1000L;
         ReflectionTestUtils.setField(requestDto, "userName", "user1");
         ReflectionTestUtils.setField(requestDto, "point", point);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        pointTransactionRepository.deleteAll();
     }
 
     @Test
@@ -109,5 +117,45 @@ class UserServiceIntegrationTest {
 
         List<PointTransaction> transactionList = pointTransactionRepository.findAll();
         assertThat(transactionList).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("동시에 3개의 충전 시도한 경우")
+    void concurrent_three_orders() throws InterruptedException {
+        // Given
+        User user = userRepository.findByUserName("user1").orElseThrow();
+        long previousPoint = user.getPoint();
+
+        // When
+        int numOfThreads = 3;
+        ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
+        CountDownLatch latch = new CountDownLatch(numOfThreads);
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failCount = new AtomicInteger();
+
+        for (int i = 0; i < numOfThreads; i++) {
+            executorService.execute(() -> {
+                try {
+                    userService.chargePoint(requestDto);
+                    successCount.getAndIncrement();
+                    User user1 = userRepository.findByUserName("user1").orElseThrow();
+                    log.info("point* : " + user1.getPoint());
+                } catch (IllegalArgumentCustomException e) {
+                    failCount.getAndIncrement();
+                }
+                latch.countDown();
+            });
+        }
+
+        latch.await();
+        User afterUser = userRepository.findByUserName("user1").orElseThrow();
+
+        // Then
+        assertThat(successCount.get()).isEqualTo(numOfThreads);
+        assertThat(failCount.get()).isEqualTo(0);
+        assertThat(afterUser.getPoint()).isEqualTo(previousPoint + (point) * numOfThreads);
+
+        List<PointTransaction> transactionList = pointTransactionRepository.findAll();
+        assertThat(transactionList).hasSize(3);
     }
 }
