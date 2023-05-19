@@ -1,7 +1,9 @@
 package com.example.coffee.order.service;
 
+import com.example.coffee.common.TransactionHandler;
 import com.example.coffee.common.exception.NotFoundException;
 import com.example.coffee.common.response.ErrorType;
+import com.example.coffee.config.RedisLockRepository;
 import com.example.coffee.menu.entity.Menu;
 import com.example.coffee.menu.repository.MenuRepository;
 import com.example.coffee.order.dto.OrderRequestDto;
@@ -25,10 +27,21 @@ public class OrderService {
     private final MenuRepository menuRepository;
     private final OrderRepository orderRepository;
     private final PointTransactionRepository pointTransactionRepository;
+    private final RedisLockRepository redisLockRepository;
+    private final TransactionHandler transactionHandler;
+
+
+    public OrderResponseDto makeOrder(OrderRequestDto requestDto) {
+
+        return redisLockRepository.runOnLock(
+                requestDto.getUserName(),
+                () -> transactionHandler.runOnWriteTransaction(() -> makeOrderLogic(requestDto))
+        );
+    }
 
 
     @Transactional
-    public OrderResponseDto makeOrder(OrderRequestDto requestDto) {
+    public OrderResponseDto makeOrderLogic(OrderRequestDto requestDto) {
 
         User user = userRepository.findByUserName(requestDto.getUserName()).orElseThrow(
                 () -> new NotFoundException(ErrorType.NOT_FOUND_USER)

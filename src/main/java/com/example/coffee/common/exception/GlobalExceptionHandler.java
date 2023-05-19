@@ -32,6 +32,17 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+    @ExceptionHandler(value = CustomException.class )
+    public ResponseEntity<ErrorResponse> customException(CustomException e) {
+
+        ErrorResponse errorResponse = ErrorResponse.of(e.getMessage());
+        log.error("CustomException throw Exception : {}", e.getMessage());
+
+        return ResponseEntity
+                .status(errorResponse.getStatus())
+                .body(errorResponse);
+    }
+
     @ExceptionHandler(value = RuntimeException.class )
     public ResponseEntity<ErrorResponse> runtimeException(RuntimeException e) {
 
