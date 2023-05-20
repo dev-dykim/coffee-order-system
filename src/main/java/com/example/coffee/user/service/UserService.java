@@ -1,9 +1,9 @@
 package com.example.coffee.user.service;
 
 import com.example.coffee.common.TransactionHandler;
-import com.example.coffee.common.exception.CustomException;
 import com.example.coffee.common.exception.NotFoundException;
 import com.example.coffee.common.response.ErrorType;
+import com.example.coffee.config.RedisLockRepository;
 import com.example.coffee.user.dto.PointRequestDto;
 import com.example.coffee.user.dto.PointResponseDto;
 import com.example.coffee.user.entity.PointTransaction;
@@ -18,8 +18,6 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.concurrent.TimeUnit;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PointTransactionRepository pointTransactionRepository;
+    private final RedisLockRepository redisLockRepository;
     private final RedissonClient redissonClient;
     private final TransactionHandler transactionHandler;
 
@@ -36,20 +35,10 @@ public class UserService {
         final String lockName = "lock:" + requestDto.getUserName();
         final RLock lock = redissonClient.getLock(lockName);
 
-        try {
-            if (!lock.tryLock(5, 3, TimeUnit.SECONDS)) {
-                log.info("락 획득 실패");
-                throw new CustomException(ErrorType.FAILED_TO_ACQUIRE_LOCK);
-            }
-            log.info("락 획득 성공");
-            return transactionHandler.runOnWriteTransaction(() -> chargePointLogic(requestDto));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e.getMessage());
-        } finally {
-            if(lock != null && lock.isLocked()) {
-                lock.unlock();
-            }
-        }
+        return redisLockRepository.runOnDistributedLock(
+                lock, () -> transactionHandler.runOnWriteTransaction(
+                        () -> chargePointLogic(requestDto))
+        );
     }
 
     @Transactional

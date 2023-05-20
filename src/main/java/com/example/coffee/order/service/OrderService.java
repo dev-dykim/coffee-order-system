@@ -32,8 +32,7 @@ public class OrderService {
 
 
     public OrderResponseDto makeOrder(OrderRequestDto requestDto) {
-
-        return redisLockRepository.runOnLock(
+        return redisLockRepository.runOnSpinLock(
                 requestDto.getUserName(),
                 () -> transactionHandler.runOnWriteTransaction(() -> makeOrderLogic(requestDto))
         );
