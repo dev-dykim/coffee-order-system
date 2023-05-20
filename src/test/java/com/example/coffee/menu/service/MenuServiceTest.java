@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,7 +66,7 @@ class MenuServiceTest {
         given(menuRepository.findWeeklyTopThreeMenus()).willReturn(List.of(menu1, menu3, menu2));
 
         // When
-        List<PopularMenuResponseDto> menuList = menuService.getPopularMenus();
+        List<PopularMenuResponseDto> menuList = menuService.getPopularMenus(LocalTime.now().getHour());
 
         // Then
         assertThat(menuList).hasSize(3);
