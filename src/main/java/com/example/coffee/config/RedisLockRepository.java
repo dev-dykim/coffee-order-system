@@ -4,10 +4,12 @@ import com.example.coffee.common.exception.CustomException;
 import com.example.coffee.common.response.ErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -31,7 +33,7 @@ public class RedisLockRepository {
         return key.toString();
     }
 
-    public <T> T runOnLock(String key, Supplier<T> task) {
+    public <T> T runOnSpinLock(String key, Supplier<T> task) {
         while (true) {
             if (!lock(key)) {
                 try {
@@ -51,6 +53,23 @@ public class RedisLockRepository {
         } finally {
             log.info("락 해제");
             unlock(key);
+        }
+    }
+
+    public <T> T runOnDistributedLock(RLock lock, Supplier<T> task) {
+        try {
+            if (!lock.tryLock(5, 3, TimeUnit.SECONDS)) {
+                log.info("락 획득 실패");
+                throw new CustomException(ErrorType.FAILED_TO_ACQUIRE_LOCK);
+            }
+            log.info("락 획득 성공");
+            return task.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            if(lock != null && lock.isLocked()) {
+                lock.unlock();
+            }
         }
     }
 }
